@@ -1,0 +1,41 @@
+name: 'Build Quasar Web'
+description: Build Quasar for Web
+inputs:
+  search-values: 
+    description: Search values to find and replace with replace-values (~ is the delimiter)
+    required: false
+  replace-values: 
+    description: Replace values to replace the search-values with (~ is the delimiter)
+    required: false
+  mode:
+    description: Mode to run Quasar build with (Android, iOS, Electron or Web (default))    
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v2
+    - name: Replacements
+      run: |
+        IFS='~' read -ra SEARCH <<< "${{ inputs.search-values }}"
+        IFS='~' read -ra REPLACE <<< "${{ inputs.replace-values }}"
+        for index in ${!SEARCH[*]}; do 
+          echo "Replacing ${SEARCH[$index]} with ${REPLACE[$index]}"                        
+          grep -rl ${SEARCH[$index]} ./ | xargs sed -i s~${SEARCH[$index]}~${REPLACE[$index]}~g
+        done
+      shell: bash
+    - name: Install NodeJS
+      uses: actions/setup-node@v1
+      with:
+        node-version: "10.x"    
+    - name: Install Quasar
+      run: |
+        sudo npm install --unsafe-perm=true --allow-root &&
+        sudo npm install -g @quasar/cli        
+      shell: bash    
+    - name: Quasar build for Web      
+      run: sudo npx quasar build       
+      shell: bash   
+    - name: Upload APK for Web
+      uses: actions/upload-artifact@v1      
+      with:
+        name: quasar-build-web
+        path: ./dist/spa
