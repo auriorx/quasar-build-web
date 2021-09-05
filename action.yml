@@ -7,8 +7,6 @@ inputs:
   replace-values: 
     description: Replace values to replace the search-values with (~ is the delimiter)
     required: false
-  mode:
-    description: Mode to run Quasar build with (Android, iOS, Electron or Web (default))    
 runs:
   using: "composite"
   steps:
